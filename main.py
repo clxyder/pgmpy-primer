@@ -20,12 +20,18 @@ def main():
         variable='ExternalThreat',
         variable_card=2,
         values=[[0.5], [0.5]], # 50% chance for each state
+        state_names={
+            'ExternalThreat': ['Internal', 'External']
+        },
     )
 
     cpd_security = TabularCPD(
         variable='SecurityMeasures',
         variable_card=2,
         values=[[0.7], [0.3]], # 70% chance for strong, 30% for weak
+        state_names={
+            'SecurityMeasures': ['Strong', 'Weak']
+        },
     )
 
     # SystemVulnerability depends on SecurityMeasures only, according to the network structure
@@ -38,6 +44,10 @@ def main():
         ],
         evidence=['SecurityMeasures'],
         evidence_card=[2],
+        state_names={
+            'SecurityMeasures': ['Strong', 'Weak'],
+            'SystemVulnerability': ['High', 'Low'],
+        },
     )
 
     # DataBreach depends on ExternalThreat and SystemVulnerability
@@ -49,6 +59,11 @@ def main():
         ],
         evidence=['SystemVulnerability', 'ExternalThreat'],
         evidence_card=[2, 2],
+        state_names={
+            'DataBreach': ['Yes', 'No'],
+            'SystemVulnerability': ['High', 'Low'],
+            'ExternalThreat': ['Internal', 'External']
+        }
     )
 
     # Step 3: Add the CPDs to the model
@@ -64,8 +79,14 @@ def main():
     inference = VariableElimination(model)
 
     # Query the probability of a Data Breach given strong Security Measures
-    prob_breach = inference.query(variables=['DataBreach'], evidence={'SecurityMeasures': 1})
+    prob_breach = inference.query(
+        variables=['DataBreach'],
+        evidence={
+            'SecurityMeasures': "Strong"
+        },
+    )
     print(prob_breach)
+
 
 if __name__ == "__main__":
     main()
