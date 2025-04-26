@@ -30,7 +30,7 @@ def main():
         variable_card=2,
         values=[[0.7], [0.3]], # 70% chance for strong, 30% for weak
         state_names={
-            'SecurityMeasures': ['Strong', 'Weak']
+            'SecurityMeasures': ['Weak', 'Strong']
         },
     )
 
@@ -39,14 +39,16 @@ def main():
         variable='SystemVulnerability',
         variable_card=2,
         values=[
-            [0.1, 0.9], # Probabilities for high vulnerability
-            [0.9, 0.1], # Probabilities for low vulnerability
+            # P(SystemVulnerability=Low | SecurityMeasures=Weak), P(SV=Low | SM=Strong)
+            [0.1, 0.9],
+            # P(SystemVulnerability=High | SecurityMeasures=Weak), P(SV=High | SM=Strong)
+            [0.9, 0.1],
         ],
         evidence=['SecurityMeasures'],
         evidence_card=[2],
         state_names={
-            'SecurityMeasures': ['Strong', 'Weak'],
-            'SystemVulnerability': ['High', 'Low'],
+            'SecurityMeasures': ['Weak', 'Strong'],
+            'SystemVulnerability': ['Low', 'High'],
         },
     )
 
@@ -54,14 +56,16 @@ def main():
     cpd_breach = TabularCPD(
         variable='DataBreach', variable_card=2,
         values=[
+            # P(DataBreach=Yes | ExternalThreat=Internal, SystemVulnerability=Low), P(DB=Yes | ET=Internal, SV=High), P(DB=Yes | ET=External, SV=Low), P(DB=Yes | ET=External, SV=High)
             [0.01, 0.1, 0.4, 0.9], # Probabilities for high risk
+            # P(DataBreach=No | ExternalThreat=Internal, SystemVulnerability=Low), P(DB=No | ET=Internal, SV=High), P(DB=No | ET=External, SV=Low),
             [0.99, 0.9, 0.6, 0.1], # Probabilities for low risk
         ],
         evidence=['SystemVulnerability', 'ExternalThreat'],
         evidence_card=[2, 2],
         state_names={
             'DataBreach': ['Yes', 'No'],
-            'SystemVulnerability': ['High', 'Low'],
+            'SystemVulnerability': ['Low', 'High'],
             'ExternalThreat': ['Internal', 'External']
         }
     )
@@ -82,6 +86,7 @@ def main():
     prob_breach = inference.query(
         variables=['DataBreach'],
         evidence={
+            #'SecurityMeasures': 1,
             'SecurityMeasures': "Strong"
         },
     )
